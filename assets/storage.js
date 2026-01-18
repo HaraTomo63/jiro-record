@@ -1,42 +1,96 @@
-const STORAGE_KEY = "jirolog:v1";
+const STORAGE_KEY = "jirolog:v2";
+
+const defaultState = {
+  communityRecords: [],
+  personalRecords: [],
+  user: null,
+  skipAuth: false,
+  selectedShop: "",
+};
 
 const safeParse = (value) => {
   try {
     return JSON.parse(value);
   } catch (error) {
-    return [];
+    return null;
   }
 };
 
-export const loadAll = () => {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  const records = raw ? safeParse(raw) : [];
-  return Array.isArray(records) ? records : [];
+const normalizeState = (raw) => {
+  if (Array.isArray(raw)) {
+    return { ...defaultState, communityRecords: raw };
+  }
+  if (!raw || typeof raw !== "object") {
+    return { ...defaultState };
+  }
+  return {
+    ...defaultState,
+    ...raw,
+    communityRecords: Array.isArray(raw.communityRecords) ? raw.communityRecords : [],
+    personalRecords: Array.isArray(raw.personalRecords) ? raw.personalRecords : [],
+  };
 };
 
-export const saveAll = (records) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+const loadState = () => {
+  const raw = safeParse(localStorage.getItem(STORAGE_KEY));
+  return normalizeState(raw);
 };
 
-export const upsert = (record) => {
-  const records = loadAll();
+const saveState = (state) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+};
+
+export const loadCommunity = () => loadState().communityRecords;
+export const loadPersonal = () => loadState().personalRecords;
+
+export const upsertRecord = (type, record) => {
+  const state = loadState();
+  const key = type === "personal" ? "personalRecords" : "communityRecords";
+  const records = [...state[key]];
   const index = records.findIndex((item) => item.id === record.id);
   if (index >= 0) {
     records[index] = record;
   } else {
     records.unshift(record);
   }
-  saveAll(records);
+  state[key] = records;
+  saveState(state);
   return records;
 };
 
-export const remove = (id) => {
-  const records = loadAll().filter((item) => item.id !== id);
-  saveAll(records);
-  return records;
+export const removeRecord = (type, id) => {
+  const state = loadState();
+  const key = type === "personal" ? "personalRecords" : "communityRecords";
+  state[key] = state[key].filter((item) => item.id !== id);
+  saveState(state);
+  return state[key];
 };
 
-export const getById = (id) => {
-  const records = loadAll();
+export const getById = (type, id) => {
+  const records = type === "personal" ? loadPersonal() : loadCommunity();
   return records.find((item) => item.id === id) || null;
+};
+
+export const getUser = () => loadState().user;
+
+export const setUser = (user) => {
+  const state = loadState();
+  state.user = user;
+  saveState(state);
+};
+
+export const getSkipAuth = () => loadState().skipAuth;
+
+export const setSkipAuth = (value) => {
+  const state = loadState();
+  state.skipAuth = value;
+  saveState(state);
+};
+
+export const getSelectedShop = () => loadState().selectedShop || "";
+
+export const setSelectedShop = (shop) => {
+  const state = loadState();
+  state.selectedShop = shop;
+  saveState(state);
 };
