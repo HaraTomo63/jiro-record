@@ -13,17 +13,31 @@
     <link rel="stylesheet" href="assets/styles.css" />
   </head>
   <body>
-    <header class="app-header">
-      <div class="app-title">
-        <span class="logo-badge">JIRO</span>
-        <h1>二郎記録</h1>
-      </div>
-      <p class="app-subtitle">今日の一杯を、黄色で記録。</p>
-    </header>
+    <div class="app-shell">
+      <header class="app-header">
+        <div class="app-title">
+          <span class="logo-badge">JIRO</span>
+          <div>
+            <h1>二郎記録</h1>
+            <p class="app-subtitle">iPhoneでも、Webでも。黄色い一杯を集めよう。</p>
+          </div>
+        </div>
+      </header>
 
-    <main id="app" class="app-main" aria-live="polite"></main>
+      <main id="app" class="app-main" aria-live="polite"></main>
 
-    <button id="fab" class="fab" aria-label="新規追加">＋</button>
+      <nav id="tab-bar" class="tab-bar" aria-label="メインナビゲーション">
+        <button class="tab-item" data-tab="community">
+          <span>みんなの二郎</span>
+        </button>
+        <button class="tab-item tab-add" data-tab="add" aria-label="追加">
+          ＋
+        </button>
+        <button class="tab-item" data-tab="my">
+          <span>自分の二郎</span>
+        </button>
+      </nav>
+    </div>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
@@ -37,6 +51,8 @@
         </div>
       </div>
     </div>
+
+    <div id="auth" class="auth-modal" aria-hidden="true"></div>
 
     <script type="module" src="assets/app.js"></script>
   </body>
